@@ -16,21 +16,22 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "Media tidak ditemukan" });
     }
 
-    // Rapihin output biar enak dipakai frontend
-    const medias = data.medias.map((m) => ({
-      type: m.type,
-      url: m.url,
-      quality: m.quality || null,
-      ext: m.ext || null,
-    }));
+    // Normalize output biar rapi & konsisten
+    const medias = data.medias
+      .filter((m) => m?.url && m?.type)
+      .map((m) => ({
+        type: m.type, // image | video | audio
+        url: m.url,
+        quality: m.quality || ""
+      }));
 
     return res.status(200).json({
-      title: data.title || null,
+      title: data.title || "",
       source: url,
-      medias,
+      medias
     });
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    console.error("download api error:", e?.message || e);
     return res.status(500).json({ error: "Server error" });
   }
-  }
+}
